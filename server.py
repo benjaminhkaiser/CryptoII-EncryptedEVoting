@@ -1,4 +1,6 @@
 import socket
+from Crypto.Cipher import AES	#requires pyCrypto installation
+
 
 def listen_for_client():
 	s = socket.socket()			#create the socket
@@ -11,7 +13,12 @@ def listen_for_client():
 			c, addr = s.accept()				#accept client connection
 			votestring = str(addr) + " voted "	#add client address to string
 			vote = c.recv(1024)
-			votestring += str(vote)
+			iv = c.recv(16)
+
+			decryptor = AES.new('0123456789abcdef', AES.MODE_CBC, iv)
+			vote = decryptor.decrypt(vote)	
+
+			votestring += str(vote)[0]
 			print votestring
 			c.send("Vote registered.")			#send confirmation msg
 			c.close()							#close client connection
