@@ -35,4 +35,4 @@ nosetests.xml
 .pydevproject
 
 # RSA key files
-.pem
+*.pem
