@@ -1,5 +1,5 @@
 #This is the registrar
-import Crypto
+from Crypto.PublicKey import RSA
 import os
 
 
