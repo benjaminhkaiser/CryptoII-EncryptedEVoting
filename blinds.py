@@ -3,7 +3,7 @@
 ##########################################################
 import Crypto
 import Crypto.PublicKey.RSA
-
+from Crypto.Random.random import getrandbits
 #	key = RSA.generate(1024)
 #	key2 = RSA.generate(1024)
 #
@@ -38,18 +38,29 @@ import Crypto.PublicKey.RSA
 #PaillierEncryptedVote
 
 #Load Notary public key from file
+f = open('NotaryKey.pem','r')
+NotaryPublic = RSA.importKey(f.read())
+f.close()
 
 
-r = 12L #make this random
+f = open('CurrentVoter.pem', 'r')
+VoterPrivate = RSA.importKey(f.read())
+f.close()
+#Sign the randomBits
+k = getrandbits(64)
+x = VoterPrivate.sign(randomBits, k)
+
+
+r = getrandbits(64) #make this more random/secure?
 #blind the PaillierVote with Notary key
-blinded = NotaryKey.blind(PaillierEncryptedVote,r)
+blinded = NotaryPublic.blind(PaillierEncryptedVote,r)
 
 
 #Recieve the blind signed vote back
-
+blindsigned
 
 #Get PaillierVote with a signature on it
-signed = NotaryKey.unblind( blindsigned[0]. r)
+signed = NotaryPublic.unblind( blindsigned[0]. r)
 
 #Now this can be sent to the server
 
