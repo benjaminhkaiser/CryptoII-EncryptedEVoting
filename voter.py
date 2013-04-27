@@ -13,6 +13,12 @@ def get_vote(key,iv):
 	while (len(vote) < 64):
 		vote += " "
 
+	#JEREMY -----------------------------------------
+	#ENCRYPT VOTE WITH PAILLER HERE
+	#WHATEVER THE OUTPUT OF THAT ENCRYPTION IS NEEDS TO BE 
+	#ENCRYPTED BY AES BELOW (encryptor.encrypt(vote))
+	#JEREMY -----------------------------------------
+
 	#encrypt with AES
 	encryptor = AES.new(key,AES.MODE_CBC,iv)
 	return encryptor.encrypt(vote)
@@ -37,6 +43,27 @@ def connect_to_server():
 
 	sock.send(enc_AES_key[0])	#send the AES key
 	sock.send(enc_AES_iv[0])	#send the AES iv
+	
+	#get notary public key
+	f.close()
+	f = open('NotaryKey.pem','r')
+	not_pub_key = RSA.importKey(f.read())
+	f.close()
+
+	#get voter private key
+	f = open('CurrentVoter.pem','r')
+	voter_priv_key = RSA.importKey(f.read())
+	f.close()
+
+	#get random bits from notary over socket
+	#k = getrandbits(64)
+	#signed_rand_bits = voter_priv_key.sign(randomBits,k)
+
+	#blind vote
+	#k = getrandbits(64)
+	#vote = get_vote(AES_key,AES_iv)	
+	#blinded_vote = not_pub_key.blind(vote,k)
+
 	sock.send(get_vote(AES_key,AES_iv)) #send AES-encrypted vote
 
 	print sock.recv(1024)		#print rec'd confirmation msg
