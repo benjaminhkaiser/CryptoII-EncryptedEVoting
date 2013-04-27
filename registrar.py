@@ -19,5 +19,5 @@ def Register(): # Call this function each time a new voter wants to register
 	
 	#Keys for current voter, only need one voter at a time
 	f = open('CurrentVoter.pem', 'w')
-	f.write(newKey.expotkey( )
+	f.write(newKey.exportkey()) # figure out how to add a password
 	f.close()
