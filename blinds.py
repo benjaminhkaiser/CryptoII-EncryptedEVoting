@@ -44,7 +44,7 @@ f.close()
 
 
 f = open('CurrentVoter.pem', 'r')
-VoterPrivate = RSA.importKey(f.read())
+VoterPrivate = RSA.importKey(f.read())#Add prompt for user passcode
 f.close()
 #Sign the randomBits
 k = getrandbits(64)
