@@ -38,6 +38,11 @@ def listen_for_client():
 		vote = c.recv(128)
 		vote = AES_decryptor.decrypt(vote)
 
+		#JEREMY ----------------------------------------------------
+		#PUT PAILLER DECRYPTION HERE
+		#vote HOLDS THE PAILLER-ENCRPYTED PACKET
+		#JEREMY ---------------------------------------------------
+
 		print (str(addr) + " voted " + vote)
 		
 		c.send("Vote registered.")	#send confirmation msg
