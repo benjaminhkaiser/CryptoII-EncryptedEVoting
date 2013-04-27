@@ -4,6 +4,7 @@ import hashlib
 from Crypto.Cipher import AES		#requires pyCrypto installation
 from Crypto.PublicKey import RSA	#requires pyCrypto installation
 from Crypto import Random		#requires pyCrypto installation
+import registrar
 
 def get_vote(key,iv):
 	vote = raw_input("Enter your vote: ")	#get vote from user
@@ -17,6 +18,7 @@ def get_vote(key,iv):
 	return encryptor.encrypt(vote)
 	
 def connect_to_server():
+	registrar.Register()
 	sock = socket.socket()		#create a socket
 	host = socket.gethostname()	#get the host name of the socket
 	port = 12345              	#initialize the port for the socket

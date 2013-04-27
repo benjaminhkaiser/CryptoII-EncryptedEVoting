@@ -1,5 +1,5 @@
 #This is the registrar
-import Crypto
+from Crypto.PublicKey import RSA
 import os
 
 
@@ -14,10 +14,11 @@ def Register(): # Call this function each time a new voter wants to register
 		f = open('RegKeys.pem', 'w')
 
 	newKey = RSA.generate(1024)
-	f.write(newKey.publickey().exportkey())
+		
+	f.write(newKey.publickey().exportKey())
 	f.close()
 	
 	#Keys for current voter, only need one voter at a time
 	f = open('CurrentVoter.pem', 'w')
-	f.write(newKey.exportkey()) # figure out how to add a password
+	f.write(newKey.exportKey()) # figure out how to add a password
 	f.close()
