@@ -27,14 +27,21 @@ if (filesize%217 == 0):
 if isValidUser:
 
 	#Generate a Notary key pair
-	if os.path.isfile('NotaryKey.pem')
+	if os.path.isfile('NotaryKeyPublic.pem'):
 		NotaryKey = RSA.generate(1024)
 		NotaryPublic = NotaryKey.publickey()
-
-	#publish Notary public key to a file
-	f = open('NotaryKey.pem','w')
-	f.write(NotaryPublic.exportKey())
-	f.close()
+		#publish Notary public key to a file
+		f = open('NotaryKeyPublic.pem','w')
+		f.write(NotaryPublic.exportKey())
+		f.close()
+		f = open('NotaryKey.pem')
+		f.write(NotaryKey.exportKey())
+		f.close()
+	else:
+		f = open('NotaryKey.pem')
+		NotaryKey = RSA.importKey(f.read())
+		f.close()
+		
 
 	#Recieve blinded, encrypted vote from voter
 	blindedC
