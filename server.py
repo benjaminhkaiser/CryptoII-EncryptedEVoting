@@ -1,23 +1,25 @@
 import socket
 from Crypto.PublicKey import RSA
+from Crypto.Cipher import AES
 from Crypto import Random
 
 publicKeyFile = "serverpubkey.pem"
 
 #writes public key to file, returns private key
-def set_keys():
+def set_RSA_keys():
+	#generate random number, then keys
 	rand = Random.new().read
 	keys = RSA.generate(1024,rand)
-	public_key = keys.publickey().exportKey()
-	private_key = keys.exportKey(passphrase="cryptoII")
 
+	#write public key to file
+	public_key = keys.publickey().exportKey()
 	pubHandle = open(publicKeyFile, 'w')
 	pubHandle.write(public_key)
 	
 	return keys 
 
 def listen_for_client():
-	key = set_keys()	#generate keys
+	key = set_RSA_keys()	#generate RSA keys
 	s = socket.socket()	#create the socket
 	host = socket.gethostname()	#get the host name of the socket
 	port = 12345	#initialize the port to connect over
@@ -26,12 +28,23 @@ def listen_for_client():
 	s.listen(5)	#listen for client connections
 	while True:
 		c, addr = s.accept()	#accept client connection
-		votestring = str(addr) + " voted "	#add client address to string
-		vote = c.recv(128)
-
-		votestring += key.decrypt(vote)
 		
-		print votestring
+		#get AES info and decrypt using RSA private key
+		AES_key = key.decrypt(c.recv(128))
+		AES_iv = key.decrypt(c.recv(128))
+		
+		#get vote encrypted by AES and decrypt
+		AES_decryptor = AES.new(AES_key, AES.MODE_CBC, AES_iv)
+		vote = c.recv(128)
+		vote = AES_decryptor.decrypt(vote)
+
+		#JEREMY ----------------------------------------------------
+		#PUT PAILLER DECRYPTION HERE
+		#vote HOLDS THE PAILLER-ENCRPYTED PACKET
+		#JEREMY ---------------------------------------------------
+
+		print (str(addr) + " voted " + vote)
+		
 		c.send("Vote registered.")	#send confirmation msg
 		c.close()	#close client connection
 
