@@ -1,5 +1,6 @@
 #This is the registrar
 from Crypto.PublicKey import RSA
+from Crypto.Cipher import AES
 import os
 
 
@@ -24,11 +25,11 @@ def Register(): # Call this function each time a new voter wants to register
 	
 	#Keys for current voter, only need one voter at a time
 	f = open('CurrentVoter.pem', 'w')
-	x = newKey.exportKey()Let 
+	x = newKey.exportKey() 
 	while len(x) % 16 != 0:
 		x += '0'
 	cipher = AES.new( password, AES.MODE_ECB)
 	enc_x = cipher.encrypt(x)
-	f.write(x)
+	f.write(enc_x)
 	f.close()
 

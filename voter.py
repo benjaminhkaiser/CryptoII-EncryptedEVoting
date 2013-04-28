@@ -84,10 +84,6 @@ def connect_to_server():
 	#get random bits from notary over socket
 	not_rand_bits = not_AES_encryptor.decrypt(not_sock.recv(16))
 
-	#get voter's private key	
-	f = open("CurrentVoter.pem",'r')
-	voter_priv_key = RSA.importKey(f.read())
-
 	#sign random bits from notary with private key
 	k = getrandbits(64)
 	signed_rand_bits = str(voter_priv_key.sign(not_rand_bits,k)[0])
