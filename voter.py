@@ -25,21 +25,21 @@ def get_vote(key,iv):
 	
 def connect_to_server():
 	registrar.Register()
-	sock = socket.socket()		#create a socket
+	serv_sock = socket.socket()		#create a socket
 	host = socket.gethostname()	#get the host name of the socket
-	port = 12345              	#initialize the port for the socket
+	serv_port = 12345              	#initialize the port for the socket
 
-	sock.connect((host, port))	#connect the socket
+	serv_sock.connect((host, serv_port))	#connect the socket
 
 	#generate AES key and iv
-	AES_key = Random.new().read(16)
-	AES_iv = Random.new().read(16)
+	serv_AES_key = Random.new().read(16)
+	serv_AES_iv = Random.new().read(16)
 
 	#encrypt AES data with server's RSA public key
 	f = open("serverpubkey.pem",'r')
-	RSA_key = RSA.importKey(f.read())
-	enc_AES_key = RSA_key.encrypt(AES_key,32)
-	enc_AES_iv = RSA_key.encrypt(AES_iv,32)
+	serv_pub_key = RSA.importKey(f.read())
+	enc_AES_key = serv_pub_key.encrypt(serv_AES_key,32)
+	enc_AES_iv = serv_pub_key.encrypt(serv_AES_iv,32)
 
 	sock.send(enc_AES_key[0])	#send the AES key
 	sock.send(enc_AES_iv[0])	#send the AES iv
@@ -55,6 +55,23 @@ def connect_to_server():
 	voter_priv_key = RSA.importKey(f.read())
 	f.close()
 
+	#generate AES key and iv
+	not_AES_key = Random.new().read(16)
+	not_AES_iv = Random.new().read(16)
+
+	#encrypt AES info with notary's public key
+	enc_AES_key = not_pub_key.encrypt(not_AES_key,32)
+	enc_AES_iv = not_pub_key.encrypt(not_AES_iv,32)
+
+	#initialize network connection to notary
+	not_sock = socket.socket()		#create a socket
+	not_port = 12346              	#initialize the port for the socket
+	not_sock.connect((host, not_port))	#connect the socket
+
+	#send encrypted AES data to notary
+	sock.send(enc_AES_key[0])	#send the AES key
+	sock.send(enc_AES_iv[0])	#send the AES iv
+	
 	#get random bits from notary over socket
 	#k = getrandbits(64)
 	#signed_rand_bits = voter_priv_key.sign(randomBits,k)
