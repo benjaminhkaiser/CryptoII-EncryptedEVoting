@@ -37,14 +37,14 @@ isValidUser = false
 # iterate through all public keys to see if one is a valid signature
 #length of valid public key after export is always 217
 statinfo = os.stat('RegKeys.pem')
-filesize = stat_info.st_size
+filesize = statinfo.st_size
 f = open('RegKeys.pem', 'r')
-if (filesize%217 == 0):
-	for x in range(0, filesize/217):
+if (filesize%271 == 0):
+	for x in range(0, filesize/271):
 		tPubKey = RSA.importKey(f.read(271))
 		if tPubKey.verify(randomBits, signedRandomBits):
 			isValidUser = true
-			x = filesize/217#This just terminates the for loop
+			x = filesize/271#This just terminates the for loop
 		
 if isValidUser:
 
