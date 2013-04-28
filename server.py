@@ -34,15 +34,20 @@ def listen_for_client():
 		AES_key = key.decrypt(c.recv(128))
 		AES_iv = key.decrypt(c.recv(128))
 		
-		#get vote encrypted by AES and decrypt
+		#get vote and signed vote, decrypt, unpad
 		AES_decryptor = AES.new(AES_key, AES.MODE_CBC, AES_iv)
 		vote = c.recv(128)
+		signed_vote = c.recv(320)
 		vote = AES_decryptor.decrypt(vote)
-
+		signed_vote = AES_decryptor.decrypt(signed_vote).strip()
+		
+		print(signed_vote)
 		#JEREMY ----------------------------------------------------
 		#PUT PAILLER DECRYPTION HERE
 		#vote HOLDS THE PAILLER-ENCRPYTED PACKET
 		#JEREMY ---------------------------------------------------
+
+		
 
 		print (str(addr) + " voted " + vote)
 		

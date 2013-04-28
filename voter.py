@@ -88,20 +88,31 @@ def connect_to_server():
 	k = getrandbits(64)
 	blinded_vote = str(not_pub_key.blind(vote,k))
 
-	print(blinded_vote)
-
-	#pad length of s_r_b to something divisible by 16 (usually 320)
-	while (len(signed_rand_bits) % 16 != 0):
+	#pad length of s_r_b to 320
+	while (len(signed_rand_bits) < 320):
 		signed_rand_bits+=" "
 
 	#send signed random bits and blinded vote back to notary
 	not_sock.send(not_AES_encryptor.encrypt(signed_rand_bits))
 	not_sock.send(not_AES_encryptor.encrypt(blinded_vote))	
+
+	#receive blind signed vote from notary and unblind
+	blinded_signed_vote = not_AES_encryptor.decrypt(not_sock.recv(320))
+	blinded_signed_vote = blinded_signed_vote.strip()
+	signed_vote = str(not_pub_key.unblind(long(blinded_signed_vote),k))
 	
-	#send vote
+	#send vote to server
 	serv_sock.send(serv_AES_encryptor.encrypt(vote))
 
-	print serv_sock.recv(1024)		#print rec'd confirmation msg
+	#pad signed vote to 320
+	while (len(signed_vote) < 320):
+		signed_vote += " "
+	
+	#send signed vote
+	serv_sock.send(serv_AES_encryptor.encrypt(signed_vote))
+	
+	#print rec'd confirmation message
+	print serv_sock.recv(1024)
 	serv_sock.close			#close the socket
 
 if __name__ == "__main__":
