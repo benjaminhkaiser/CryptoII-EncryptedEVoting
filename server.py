@@ -39,15 +39,20 @@ def listen_for_client():
 		vote = c.recv(128)
 		signed_vote = c.recv(320)
 		vote = AES_decryptor.decrypt(vote)
-		signed_vote = AES_decryptor.decrypt(signed_vote).strip()
+		signed_vote = [long(AES_decryptor.decrypt(signed_vote).strip()),None]
 		
-		print(signed_vote)
 		#JEREMY ----------------------------------------------------
 		#PUT PAILLER DECRYPTION HERE
 		#vote HOLDS THE PAILLER-ENCRPYTED PACKET
 		#JEREMY ---------------------------------------------------
 
-		
+		#load notary public key
+		f = open("NotaryKey.pem",'r')
+		not_pub_key = RSA.importKey(f.read())
+		f.close()
+	
+		#use notary public key to verify signed vote against regular vote
+		print(not_pub_key.verify(vote, signed_vote))
 
 		print (str(addr) + " voted " + vote)
 		
