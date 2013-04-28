@@ -36,23 +36,22 @@ while(1):
 	enc_rand_bits = AES_encryptor.encrypt(randomBits)
 	c.send(enc_rand_bits)
 
-	#need to recieve length of signed bits first
 	#receive random bits signed by voter private key
-#	signedRandomBits = long(c.recv(308*16))
-#	signedRandomBits = signedRandomBits/16
-#	blindedVote = c.recv(128)
+	signedRandomBits = AES_encryptor.decrypt(c.recv(320)).strip()
+	blindedVote = AES_encryptor.decrypt(c.recv(128))
 
-	statinfo = os.stat('RegKeys.pem')
-	filesize = statinfo.st_size
-	f = open('RegKeys.pem', 'r')
-	if (filesize%271 == 0):
-		for x in range(0, filesize/271):
-			tPubKey = RSA.importKey(f.read(271))
-			if tPubKey.verify(randomBits, signedRandomBits):
-				isValidUser = true
-				break;
+	print("-" + str(signedRandomBits) + "-")
+	print(blindedVote)
+#	statinfo = os.stat('RegKeys.pem')
+#	filesize = statinfo.st_size
+#	f = open('RegKeys.pem', 'r')
+#	if (filesize%271 == 0):
+#		for x in range(0, filesize/271):
+#			tPubKey = RSA.importKey(f.read(271))
+#			if tPubKey.verify(randomBits, signedRandomBits):
+#				isValidUser = true
+#				break;
 		
-#signedRandomBits
 
 #Set this to true only if you get a valid signature verification
 #isValidUser = false

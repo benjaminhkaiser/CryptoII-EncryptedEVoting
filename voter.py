@@ -32,8 +32,7 @@ def connect_to_server():
 	#generate AES key, iv, encryptor and decryptor
 	serv_AES_key = Random.new().read(16)
 	serv_AES_iv = Random.new().read(16)
-	AES_encryptor = AES.new(serv_AES_key, AES.MODE_CBC, serv_AES_iv)
-	#AES_decryptor = AES.new(serv_AES_key, AES.MODE_CBC, serv_AES_iv)
+	serv_AES_encryptor = AES.new(serv_AES_key, AES.MODE_CBC, serv_AES_iv)
 
 	#encrypt AES data with server's RSA public key
 	f = open("serverpubkey.pem",'r')
@@ -58,7 +57,8 @@ def connect_to_server():
 	#generate AES key and iv
 	not_AES_key = Random.new().read(16)
 	not_AES_iv = Random.new().read(16)
-
+	not_AES_encryptor = AES.new(not_AES_key, AES.MODE_CBC, not_AES_iv)
+	
 	#encrypt AES info with notary's public key
 	enc_AES_key = not_pub_key.encrypt(not_AES_key,32)
 	enc_AES_iv = not_pub_key.encrypt(not_AES_iv,32)
@@ -73,7 +73,7 @@ def connect_to_server():
 	not_sock.send(enc_AES_iv[0])	#send the AES iv
 	
 	#get random bits from notary over socket
-	not_rand_bits = AES_encryptor.decrypt(not_sock.recv(16))
+	not_rand_bits = not_AES_encryptor.decrypt(not_sock.recv(16))
 
 	#get voter's private key	
 	f = open("CurrentVoter.pem",'r')
@@ -81,28 +81,25 @@ def connect_to_server():
 
 	#sign random bits from notary with private key
 	k = getrandbits(64)
-	signed_rand_bits = (voter_priv_key.sign(not_rand_bits,k)[0]*16)
+	signed_rand_bits = str(voter_priv_key.sign(not_rand_bits,k)[0])
 	
 	#get vote from user and blind
 	vote = get_vote()
 	k = getrandbits(64)
 	blinded_vote = str(not_pub_key.blind(vote,k))
-		
-	#TODO: combine signed bits and blinded vote into one packet to send?
+
+	print(blinded_vote)
+
+	#pad length of s_r_b to something divisible by 16 (usually 320)
+	while (len(signed_rand_bits) % 16 != 0):
+		signed_rand_bits+=" "
 
 	#send signed random bits and blinded vote back to notary
-
-#	Having trouble here because the signed_rand_bits are not
-#	always the same length. That means I don't know how many
-#	bytes to tell the notary to look for on recv(). Also,
-#	AES encryption requires input of length divisible by 16
-#	so trying to encrypt the signed_rand_bits fails.
-	
-	#not_sock.send(AES_encryptor.encrypt(signed_rand_bits))
-	#not_sock.send(AES_encryptor.encrypt(blinded_vote))	
+	not_sock.send(not_AES_encryptor.encrypt(signed_rand_bits))
+	not_sock.send(not_AES_encryptor.encrypt(blinded_vote))	
 	
 	#send vote
-	serv_sock.send(AES_encryptor.encrypt(vote))
+	serv_sock.send(serv_AES_encryptor.encrypt(vote))
 
 	print serv_sock.recv(1024)		#print rec'd confirmation msg
 	serv_sock.close			#close the socket
