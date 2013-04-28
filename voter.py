@@ -5,6 +5,7 @@ from Crypto.Cipher import AES		#requires pyCrypto installation
 from Crypto.PublicKey import RSA	#requires pyCrypto installation
 from Crypto import Random		#requires pyCrypto installation
 import registrar
+import sys
 
 def get_vote(key,iv):
 	vote = raw_input("Enter your vote: ")	#get vote from user
@@ -27,7 +28,7 @@ def connect_to_server():
 	registrar.Register()
 	serv_sock = socket.socket()		#create a socket
 	host = socket.gethostname()	#get the host name of the socket
-	serv_port = 12345              	#initialize the port for the socket
+	serv_port = int(sys.argv[1])  	#initialize the port for the socket
 
 	serv_sock.connect((host, serv_port))	#connect the socket
 
@@ -41,8 +42,8 @@ def connect_to_server():
 	enc_AES_key = serv_pub_key.encrypt(serv_AES_key,32)
 	enc_AES_iv = serv_pub_key.encrypt(serv_AES_iv,32)
 
-	sock.send(enc_AES_key[0])	#send the AES key
-	sock.send(enc_AES_iv[0])	#send the AES iv
+	serv_sock.send(enc_AES_key[0])	#send the AES key
+	serv_sock.send(enc_AES_iv[0])	#send the AES iv
 	
 	#get notary public key
 	f.close()
@@ -65,14 +66,18 @@ def connect_to_server():
 
 	#initialize network connection to notary
 	not_sock = socket.socket()		#create a socket
-	not_port = 12346              	#initialize the port for the socket
+	not_port = int(sys.argv[2])   	#initialize the port for the socket
 	not_sock.connect((host, not_port))	#connect the socket
 
 	#send encrypted AES data to notary
-	sock.send(enc_AES_key[0])	#send the AES key
-	sock.send(enc_AES_iv[0])	#send the AES iv
+	not_sock.send(enc_AES_key[0])	#send the AES key
+	not_sock.send(enc_AES_iv[0])	#send the AES iv
 	
 	#get random bits from notary over socket
+	not_rand_bits = not_sock.recv(16)	
+	print("not_rand_bits:" + str(not_rand_bits))
+	not_sock.close
+#not_rand_bits = 
 	#k = getrandbits(64)
 	#signed_rand_bits = voter_priv_key.sign(randomBits,k)
 
@@ -81,10 +86,13 @@ def connect_to_server():
 	#vote = get_vote(AES_key,AES_iv)	
 	#blinded_vote = not_pub_key.blind(vote,k)
 
-	sock.send(get_vote(AES_key,AES_iv)) #send AES-encrypted vote
+	serv_sock.send(get_vote(serv_AES_key,serv_AES_iv)) #send AES-encrypted vote
 
-	print sock.recv(1024)		#print rec'd confirmation msg
-	sock.close			#close the socket
+	print serv_sock.recv(1024)		#print rec'd confirmation msg
+	serv_sock.close			#close the socket
 
 if __name__ == "__main__":
+	if (len(sys.argv) != 3):
+		print("Usage: python voter.py server_port notary_port")
+		sys.exit(0)
 	connect_to_server()	

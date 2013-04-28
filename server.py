@@ -2,6 +2,7 @@ import socket
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto import Random
+import sys
 
 publicKeyFile = "serverpubkey.pem"
 
@@ -22,7 +23,7 @@ def listen_for_client():
 	key = set_RSA_keys()	#generate RSA keys
 	s = socket.socket()	#create the socket
 	host = socket.gethostname()	#get the host name of the socket
-	port = 12345	#initialize the port to connect over
+	port = (int(sys.argv[1]))	#initialize the port to connect over
 	s.bind((host, port))	#bind the socket to the port
 
 	s.listen(5)	#listen for client connections
