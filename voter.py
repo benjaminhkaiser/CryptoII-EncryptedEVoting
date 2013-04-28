@@ -50,9 +50,18 @@ def connect_to_server():
 	f.close()
 
 	#get voter private key
+	#Could add more input verification
+	password = raw_input('Please enter your password: ')
+	while len(password) %16 != 0:
+		password += '0'
+
 	f = open('CurrentVoter.pem','r')
-	voter_priv_key = RSA.importKey(f.read())
+	enc_x = f.read()
 	f.close()
+	cipher = AES.new(password, AES.MODE_ECB)
+	x = cipher.decrypt(enc_x)
+	x = x.rstrip('0')
+	voter_priv_key = RSA.importKey(x)
 
 	#generate AES key and iv
 	not_AES_key = Random.new().read(16)
