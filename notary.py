@@ -1,4 +1,5 @@
 #This is the Notary
+#Notary opens for voters to connect and should never be closed
 
 import Crypto
 import Crypto.PublicKey.RSA
@@ -27,20 +28,14 @@ if (filesize%217 == 0):
 if isValidUser:
 
 	#Generate a Notary key pair
-	if os.path.isfile('NotaryKeyPublic.pem'):
+	if os.path.isfile('NotaryKey.pem'):
 		NotaryKey = RSA.generate(1024)
 		NotaryPublic = NotaryKey.publickey()
 		#publish Notary public key to a file
-		f = open('NotaryKeyPublic.pem','w')
+		f = open('NotaryKey.pem','w')
 		f.write(NotaryPublic.exportKey())
 		f.close()
-		f = open('NotaryKey.pem')
-		f.write(NotaryKey.exportKey())
-		f.close()
-	else:
-		f = open('NotaryKey.pem')
-		NotaryKey = RSA.importKey(f.read())
-		f.close()
+	
 		
 
 	#Recieve blinded, encrypted vote from voter
