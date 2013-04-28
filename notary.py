@@ -2,71 +2,75 @@
 #Notary opens for voters to connect and should never be closed
 
 import Crypto
-import Crypto.PublicKey.RSA
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import AES
 from Crypto.Random.random import getrandbits
-import os, socket
+from Crypto import Random
+import os, socket, sys
 
 #initialize network connection to voter
 sock = socket.socket()	#create socket
 host = socket.gethostname()	#get host name of socket
-port = 12346		#initialize port to connect over
-sock.bind(host,port)	#bind socket to port
+port = int(sys.argv[1])		#initialize port to connect over
+sock.bind((host,port))	#bind socket to port
 sock.listen(5)		#listen for client connection
 
 while(1):
-	c,addr = s.accept()	#accept voter connection
+	#Generate a Notary key pair
+	NotaryKey = RSA.generate(1024)
+	NotaryPublic = NotaryKey.publickey()
+	#publish Notary public key to a file
+	f = open('NotaryKey.pem','w')
+	f.write(NotaryPublic.exportKey())
+	f.close()
 
-	#MOVE KEY GENERATION HERE
+	c,addr = sock.accept()	#accept voter connection
 
 	#get AES info and decrypt using RSA private key
-	AES_key = key.decrypt(c.recv(128))
-	AES_iv = key.decrypt(c.recv(128))
-
+	AES_key = NotaryKey.decrypt(c.recv(128))
+	AES_iv = NotaryKey.decrypt(c.recv(128))
+	#print(len(AES_key))
+	
 	#generate random bits, encrypt, send to voter
-	randomBits = getrandbits(64)
+	randomBits = str(Random.new().read(16))
+	#print(len(randomBits))
 	AES_encryptor = AES.new(AES_key, AES.MODE_CBC, AES_iv)
-	enc_rand_bits = encryptor.encrypt(enc_rand_bits)
-	sock.send(enc_rand_bits[0])
+	enc_rand_bits = AES_encryptor.encrypt(randomBits)
+	print("Len of enc_rand_bits[0]: " + str(len(enc_rand_bits)))
+	print("enc_rand_bits[0]: " + str(enc_rand_bits))
+	sock.send(enc_rand_bits)
 
 	#receive random bits signed by voter private key
 	
-signedRandomBits
+	
+#signedRandomBits
 
 #Set this to true only if you get a valid signature verification
-isValidUser = false
+#isValidUser = false
 # iterate through all public keys to see if one is a valid signature
 #length of valid public key after export is always 217
-statinfo = os.stat('RegKeys.pem')
-filesize = statinfo.st_size
-f = open('RegKeys.pem', 'r')
-if (filesize%271 == 0):
-	for x in range(0, filesize/271):
-		tPubKey = RSA.importKey(f.read(271))
-		if tPubKey.verify(randomBits, signedRandomBits):
-			isValidUser = true
-			x = filesize/271#This just terminates the for loop
-		
-if isValidUser:
 
-	#Generate a Notary key pair
-	if os.path.isfile('NotaryKey.pem'):
-		NotaryKey = RSA.generate(1024)
-		NotaryPublic = NotaryKey.publickey()
-		#publish Notary public key to a file
-		f = open('NotaryKey.pem','w')
-		f.write(NotaryPublic.exportKey())
-		f.close()
-	
-		
+
+
+#statinfo = os.stat('RegKeys.pem')
+#filesize = statinfo.st_size
+#f = open('RegKeys.pem', 'r')
+#if (filesize%271 == 0):
+#	for x in range(0, filesize/271):
+#		tPubKey = RSA.importKey(f.read(271))
+#		if tPubKey.verify(randomBits, signedRandomBits):
+#			isValidUser = true
+#			x = filesize/271#This just terminates the for loop
+#		
+#if isValidUser:
+
 
 	#Recieve blinded, encrypted vote from voter
-	blindedC
+	#blindedC
 
-
-
-	k = getrandbits(64) #Change this to something random
+#	k = getrandbits(64) #Change this to something random
 	#blind sign c'
-	blindsigned = NotaryKey.sign( blindedC, k)
+#	blindsigned = NotaryKey.sign( blindedC, k)
 
 
 	#send blindsigned back to the voter
