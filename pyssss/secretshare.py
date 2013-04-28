@@ -33,8 +33,8 @@ if(options.generate):
 	pai = pkenc_paillier99.Pai99(group)
 	(public_key, secret_key) = pai.keygen()
 
-#	sharedsecret = str(secret_key['u']) + ',' + str(secret_key['lamda'])
-	sharedsecret = "message"
+	sharedsecret = str(secret_key['u']) + ',' + str(secret_key['lamda'])
+#	sharedsecret = "message"
 	input = StringIO.StringIO(sharedsecret)
 
 
@@ -45,12 +45,11 @@ if(options.generate):
 
 
 	for i in xrange(n):
-		print outputs[i].getvalue().encode('hex')
+#		print outputs[i].getvalue().encode('hex')
 		f = open(prefix+str(i),'w')
 		f.write(outputs[i].getvalue())
 
 if(options.combine):
-	print ''
 		
 	inputs = []
 	for i in xrange(k):
@@ -59,7 +58,7 @@ if(options.combine):
 		data = f.read()
 		output = StringIO.StringIO()
 		output.write(data)
-		print output.getvalue().encode('hex')
+#		print output.getvalue().encode('hex')
 		inputs.append(output)
 
 
@@ -69,6 +68,9 @@ if(options.combine):
 	output = StringIO.StringIO()
 	decode(inputs,output)
 
-	print output.getvalue()
+	#if(sharedsecret == output.getvalue()):
+	print 'Recovered key is in file ./RecoveredKey'
+	f=open('RecoveredKey','w')
+	f.write(output.getvalue())
 
 
