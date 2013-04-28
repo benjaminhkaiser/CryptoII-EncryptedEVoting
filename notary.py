@@ -26,9 +26,10 @@ if (filesize%217 == 0):
 		
 if isValidUser:
 
-	#Genrate a Notary key pair
-	NotaryKey = RSA.generate(1024)
-	NotaryPublic = NotaryKey.publickey()
+	#Generate a Notary key pair
+	if os.path.isfile('NotaryKey.pem')
+		NotaryKey = RSA.generate(1024)
+		NotaryPublic = NotaryKey.publickey()
 
 	#publish Notary public key to a file
 	f = open('NotaryKey.pem','w')
