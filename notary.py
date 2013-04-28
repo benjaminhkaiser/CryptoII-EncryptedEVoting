@@ -4,11 +4,32 @@
 import Crypto
 import Crypto.PublicKey.RSA
 from Crypto.Random.random import getrandbits
-import os
+import os, socket
 
-#Generate random bits, send to voter
-randomBits = getrandbits(64)
-#Get randombits back signed with vote private key
+#initialize network connection to voter
+sock = socket.socket()	#create socket
+host = socket.gethostname()	#get host name of socket
+port = 12346		#initialize port to connect over
+sock.bind(host,port)	#bind socket to port
+sock.listen(5)		#listen for client connection
+
+while(1):
+	c,addr = s.accept()	#accept voter connection
+
+	#MOVE KEY GENERATION HERE
+
+	#get AES info and decrypt using RSA private key
+	AES_key = key.decrypt(c.recv(128))
+	AES_iv = key.decrypt(c.recv(128))
+
+	#generate random bits, encrypt, send to voter
+	randomBits = getrandbits(64)
+	AES_encryptor = AES.new(AES_key, AES.MODE_CBC, AES_iv)
+	enc_rand_bits = encryptor.encrypt(enc_rand_bits)
+	sock.send(enc_rand_bits[0])
+
+	#receive random bits signed by voter private key
+	
 signedRandomBits
 
 #Set this to true only if you get a valid signature verification
