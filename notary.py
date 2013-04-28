@@ -29,20 +29,29 @@ while(1):
 	#get AES info and decrypt using RSA private key
 	AES_key = NotaryKey.decrypt(c.recv(128))
 	AES_iv = NotaryKey.decrypt(c.recv(128))
-	#print(len(AES_key))
-	
+	AES_encryptor = AES.new(AES_key, AES.MODE_CBC, AES_iv)
+
 	#generate random bits, encrypt, send to voter
 	randomBits = str(Random.new().read(16))
-	#print(len(randomBits))
-	AES_encryptor = AES.new(AES_key, AES.MODE_CBC, AES_iv)
 	enc_rand_bits = AES_encryptor.encrypt(randomBits)
-	print("Len of enc_rand_bits[0]: " + str(len(enc_rand_bits)))
-	print("enc_rand_bits[0]: " + str(enc_rand_bits))
-	sock.send(enc_rand_bits)
+	c.send(enc_rand_bits)
 
+	#need to recieve length of signed bits first
 	#receive random bits signed by voter private key
-	
-	
+#	signedRandomBits = long(c.recv(308*16))
+#	signedRandomBits = signedRandomBits/16
+#	blindedVote = c.recv(128)
+
+	statinfo = os.stat('RegKeys.pem')
+	filesize = statinfo.st_size
+	f = open('RegKeys.pem', 'r')
+	if (filesize%271 == 0):
+		for x in range(0, filesize/271):
+			tPubKey = RSA.importKey(f.read(271))
+			if tPubKey.verify(randomBits, signedRandomBits):
+				isValidUser = true
+				break;
+		
 #signedRandomBits
 
 #Set this to true only if you get a valid signature verification
@@ -52,16 +61,7 @@ while(1):
 
 
 
-#statinfo = os.stat('RegKeys.pem')
-#filesize = statinfo.st_size
-#f = open('RegKeys.pem', 'r')
-#if (filesize%271 == 0):
-#	for x in range(0, filesize/271):
-#		tPubKey = RSA.importKey(f.read(271))
-#		if tPubKey.verify(randomBits, signedRandomBits):
-#			isValidUser = true
-#			x = filesize/271#This just terminates the for loop
-#		
+		
 #if isValidUser:
 
 

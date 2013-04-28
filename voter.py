@@ -1,13 +1,14 @@
 import socket
 import hashlib
 
-from Crypto.Cipher import AES		#requires pyCrypto installation
-from Crypto.PublicKey import RSA	#requires pyCrypto installation
-from Crypto import Random		#requires pyCrypto installation
+from Crypto.Cipher import AES	
+from Crypto.PublicKey import RSA
+from Crypto import Random	
+from Crypto.Random.random import getrandbits
 import registrar
 import sys
 
-def get_vote(key,iv):
+def get_vote():
 	vote = raw_input("Enter your vote: ")	#get vote from user
 
 	#pad vote
@@ -16,14 +17,10 @@ def get_vote(key,iv):
 
 	#JEREMY -----------------------------------------
 	#ENCRYPT VOTE WITH PAILLER HERE
-	#WHATEVER THE OUTPUT OF THAT ENCRYPTION IS NEEDS TO BE 
-	#ENCRYPTED BY AES BELOW (encryptor.encrypt(vote))
-	#JEREMY -----------------------------------------
 
-	#encrypt with AES
-	encryptor = AES.new(key,AES.MODE_CBC,iv)
-	return encryptor.encrypt(vote)
-	
+	return vote
+
+
 def connect_to_server():
 	registrar.Register()
 	serv_sock = socket.socket()		#create a socket
@@ -32,9 +29,11 @@ def connect_to_server():
 
 	serv_sock.connect((host, serv_port))	#connect the socket
 
-	#generate AES key and iv
+	#generate AES key, iv, encryptor and decryptor
 	serv_AES_key = Random.new().read(16)
 	serv_AES_iv = Random.new().read(16)
+	AES_encryptor = AES.new(serv_AES_key, AES.MODE_CBC, serv_AES_iv)
+	#AES_decryptor = AES.new(serv_AES_key, AES.MODE_CBC, serv_AES_iv)
 
 	#encrypt AES data with server's RSA public key
 	f = open("serverpubkey.pem",'r')
@@ -74,19 +73,36 @@ def connect_to_server():
 	not_sock.send(enc_AES_iv[0])	#send the AES iv
 	
 	#get random bits from notary over socket
-	not_rand_bits = not_sock.recv(16)	
-	print("not_rand_bits:" + str(not_rand_bits))
-	not_sock.close
-#not_rand_bits = 
-	#k = getrandbits(64)
-	#signed_rand_bits = voter_priv_key.sign(randomBits,k)
+	not_rand_bits = AES_encryptor.decrypt(not_sock.recv(16))
 
-	#blind vote
-	#k = getrandbits(64)
-	#vote = get_vote(AES_key,AES_iv)	
-	#blinded_vote = not_pub_key.blind(vote,k)
+	#get voter's private key	
+	f = open("CurrentVoter.pem",'r')
+	voter_priv_key = RSA.importKey(f.read())
 
-	serv_sock.send(get_vote(serv_AES_key,serv_AES_iv)) #send AES-encrypted vote
+	#sign random bits from notary with private key
+	k = getrandbits(64)
+	signed_rand_bits = (voter_priv_key.sign(not_rand_bits,k)[0]*16)
+	
+	#get vote from user and blind
+	vote = get_vote()
+	k = getrandbits(64)
+	blinded_vote = str(not_pub_key.blind(vote,k))
+		
+	#TODO: combine signed bits and blinded vote into one packet to send?
+
+	#send signed random bits and blinded vote back to notary
+
+#	Having trouble here because the signed_rand_bits are not
+#	always the same length. That means I don't know how many
+#	bytes to tell the notary to look for on recv(). Also,
+#	AES encryption requires input of length divisible by 16
+#	so trying to encrypt the signed_rand_bits fails.
+	
+	#not_sock.send(AES_encryptor.encrypt(signed_rand_bits))
+	#not_sock.send(AES_encryptor.encrypt(blinded_vote))	
+	
+	#send vote
+	serv_sock.send(AES_encryptor.encrypt(vote))
 
 	print serv_sock.recv(1024)		#print rec'd confirmation msg
 	serv_sock.close			#close the socket
