@@ -14,6 +14,9 @@ from charm.schemes.pkenc import pkenc_paillier99
 from charm.core.math import integer as specialInt
 from charm.core.engine.util import objectToBytes,bytesToObject
 
+signedRandomBitsSize=320
+voteSize=128
+signedBlindedVoteSize=320
 def get_vote():
 	vote = raw_input("Enter your vote: ")	#get vote from user
 	vote = long(vote)	
@@ -40,7 +43,7 @@ def get_vote():
 
 	
 	#pad vote
-	while (len(ciphervote) < 128):
+	while (len(ciphervote) < voteSize):
 		ciphervote += " "
 
 	print ciphervote
@@ -118,8 +121,8 @@ def connect_to_server():
 	k = getrandbits(64)
 	blinded_vote = str(not_pub_key.blind(vote,k))
 
-	#pad length of s_r_b to 320
-	while (len(signed_rand_bits) < 320):
+	#pad length of s_r_b to bufSize 
+	while (len(signed_rand_bits) < signedRandomBitsSize):
 		signed_rand_bits+=" "
 
 	#send signed random bits and blinded vote back to notary
@@ -127,7 +130,7 @@ def connect_to_server():
 	not_sock.send(not_AES_encryptor.encrypt(blinded_vote))	
 
 	#receive blind signed vote from notary and unblind
-	blinded_signed_vote = not_AES_encryptor.decrypt(not_sock.recv(320))
+	blinded_signed_vote = not_AES_encryptor.decrypt(not_sock.recv(signedBlindedVoteSize))
 	blinded_signed_vote = blinded_signed_vote.strip()
 	signed_vote = str(not_pub_key.unblind(long(blinded_signed_vote),k))
 	
@@ -135,7 +138,7 @@ def connect_to_server():
 	serv_sock.send(serv_AES_encryptor.encrypt(vote))
 
 	#pad signed vote to 320
-	while (len(signed_vote) < 320):
+	while (len(signed_vote) < signedBlindedVoteSize):
 		signed_vote += " "
 	
 	#send signed vote

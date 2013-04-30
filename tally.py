@@ -46,6 +46,7 @@ def tally_vote():
 	f=open('./PublishedResults','w')
 	
 	#go through all recorded ciphervotes
+	print '#, ciphervote, plainvote'
 	for vote in data:
 		serializedVote = vote.strip()
 		ciphervote = specialInt.deserialize(serializedVote)

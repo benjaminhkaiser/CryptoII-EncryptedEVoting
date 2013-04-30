@@ -31,7 +31,7 @@ if(options.generate):
 	outputs=[]
 	group = RSAGroup()
 	pai = pkenc_paillier99.Pai99(group)
-	(public_key, secret_key) = pai.keygen(secparam=32)
+	(public_key, secret_key) = pai.keygen(secparam=16)
 
 	#sharedsecret = str(secret_key['u']) + ',' + str(secret_key['lamda'])
 #	sharedsecret = "message"

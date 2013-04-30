@@ -14,9 +14,13 @@ port = int(sys.argv[1])		#initialize port to connect over
 sock.bind((host,port))	#bind socket to port
 sock.listen(5)		#listen for client connection
 
+blindedVoteSize = 128
+signedBlindedVoteSize = 320
+signedRandomBitsSize = 320
+notaryPublicKeySize=1024
 while(1):
 	#Generate a Notary key pair
-	NotaryKey = RSA.generate(1024)
+	NotaryKey = RSA.generate(notaryPublicKeySize)
 	NotaryPublic = NotaryKey.publickey()
 	#publish Notary public key to a file
 	f = open('NotaryKey.pem','w')
@@ -34,8 +38,8 @@ while(1):
 	c.send(enc_rand_bits)
 	
 	#receive random bits signed by voter private key
-	signedRandomBits = [long(AES_encryptor.decrypt(c.recv(320)).strip()),None]
-	blindedVote = AES_encryptor.decrypt(c.recv(128))
+	signedRandomBits = [long(AES_encryptor.decrypt(c.recv(signedRandomBitsSize)).strip()),None]
+	blindedVote = AES_encryptor.decrypt(c.recv(blindedVoteSize))
 	
 	statinfo = os.stat('RegKeys.pem')
 	filesize = statinfo.st_size
@@ -54,7 +58,7 @@ while(1):
 		blind_signed_vote = str(NotaryKey.sign(blindedVote,k)[0])
 
 		#pad the signed vote to len 320 
-		while (len(blind_signed_vote) < 320):
+		while (len(blind_signed_vote) < signedBlindedVoteSize):
 			blind_signed_vote += " "
 		
 		#encrypt with AES and send
