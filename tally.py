@@ -41,6 +41,9 @@ def tally_vote():
 	f=open('./CipherVotes','r')
 	data=f.readlines()
 	count = 0
+
+	#open file for publishing results
+	f=open('./PublishedResults','w')
 	
 	#go through all recorded ciphervotes
 	for vote in data:
@@ -53,7 +56,10 @@ def tally_vote():
 			ciphertotal=ciphertotal+ciphervote
 
 
-		#ciphertotal=ciphertotal+((pai.L(ciphervote**specialInt.toInt(secret_key['lamda']), n) % n) * secret_key['u']) % n
+		#publish
+		print str(count)+','+str(ciphervote['c'])+','+ str(pai.decrypt(public_key,secret_key,ciphervote)) 
+		f.write(str(count)+','+str(ciphervote['c'])+','+ str(pai.decrypt(public_key,secret_key,ciphervote))+'\n' )
+	
 		count = count +1		
 
 	print 'Our calculated total:', pai.decrypt(public_key,secret_key,ciphertotal)
