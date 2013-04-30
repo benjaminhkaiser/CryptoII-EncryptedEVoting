@@ -36,3 +36,11 @@ nosetests.xml
 
 # RSA key files
 *.pem
+
+# Result files
+CipherVotes
+CipherVotesTotal
+PublishedResults
+
+# Test files
+testfiles/*
