@@ -28,10 +28,11 @@ ciphertext4 = pai.encrypt(public_key, msg4)
 ciphertext5 = pai.encrypt(public_key, msg5)
 ciphertext6 = pai.encrypt(public_key, msg6)
 
+print 'ciphertext1:',ciphertext1
 
-ciphertext7 = ciphertext1 + ciphertext2 + ciphertext3 + ciphertext4 + ciphertext5 + ciphertext6
+ciphertext1 = ciphertext1 + ciphertext2 + ciphertext3 + ciphertext4 + ciphertext5 + ciphertext6
 
-decrypt3 = pai.decrypt(public_key, secret_key, ciphertext7)
+decrypt3 = pai.decrypt(public_key, secret_key, ciphertext1)
 
 #convert int to string and grab k of k mod n
 decrypt3 = str(decrypt3).partition('mod')[0]

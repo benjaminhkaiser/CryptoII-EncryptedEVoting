@@ -8,18 +8,43 @@ from Crypto.Random.random import getrandbits
 import registrar
 import sys
 
+
+from charm.toolbox.integergroup import RSAGroup
+from charm.schemes.pkenc import pkenc_paillier99
+from charm.core.math import integer as specialInt
+from charm.core.engine.util import objectToBytes,bytesToObject
+
 def get_vote():
 	vote = raw_input("Enter your vote: ")	#get vote from user
+	vote = long(vote)	
+	
 
+	#Initial setup for Paillier
+	group = RSAGroup()
+	pai = pkenc_paillier99.Pai99(group)
+
+	#Get public voting public key	
+	f=open("./pyssss/VotingPublic")
+	data = f.read()
+	public_key = bytesToObject(data,group)
+	
+	#Encryption with Paillier
+	vote = pai.encode(public_key['n'],vote)
+	ciphervote = pai.encrypt(public_key,vote)
+
+#	ciphervotestr = str(str(ciphervote['c']).split('mod')[0])
+
+
+#	print ciphervote['c']
+	ciphervote = specialInt.serialize(ciphervote['c'])
+
+	
 	#pad vote
-	while (len(vote) < 64):
-		vote += " "
+	while (len(ciphervote) < 128):
+		ciphervote += " "
 
-	#JEREMY -----------------------------------------
-	#ENCRYPT VOTE WITH PAILLER HERE
-
-	return vote
-
+	print ciphervote
+        return ciphervote
 
 def connect_to_server():
 	registrar.Register()

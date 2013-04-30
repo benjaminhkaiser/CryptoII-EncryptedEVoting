@@ -4,10 +4,17 @@ from Crypto.Cipher import AES
 from Crypto import Random
 import sys
 
+from charm.core.math import integer as specialInt
+from charm.toolbox.integergroup import RSAGroup
+from charm.schemes.pkenc import pkenc_paillier99
+from charm.core.engine.util import objectToBytes,bytesToObject
+from charm.schemes.pkenc.pkenc_paillier99 import Ciphertext
 publicKeyFile = "serverpubkey.pem"
+ciphervotesFile = "CipherVotes"
+ciphervotesTotalFile = "CipherVotesTotal"
 
 #writes public key to file, returns private key
-def set_RSA_keys():
+def set_RSA_keys(): 
 	#generate random number, then keys
 	rand = Random.new().read
 	keys = RSA.generate(1024,rand)
@@ -27,6 +34,19 @@ def listen_for_client():
 	s.bind((host, port))	#bind the socket to the port
 
 	s.listen(5)	#listen for client connections
+
+	
+	#initialize 
+	group = RSAGroup()
+	pai = pkenc_paillier99.Pai99(group)
+	
+	#get voting public key	
+	f=open('./pyssss/VotingPublic','rb')
+	data=f.read()
+	public_key=bytesToObject(data,group)	
+	
+	#count variable for initial ciphervotetotal
+	count = 0
 	while True:
 		c, addr = s.accept()	#accept client connection
 		
@@ -44,6 +64,22 @@ def listen_for_client():
 		#JEREMY ----------------------------------------------------
 		#PUT PAILLER DECRYPTION HERE
 		#vote HOLDS THE PAILLER-ENCRPYTED PACKET
+		
+		#write votes to file in serialized format to be opened later	
+		f=open(ciphervotesFile,'a')
+		f.write(vote)
+		f.write('\n')
+		
+		#deserialize vote 
+		ciphervote = specialInt.deserialize(vote)
+		ciphervote = Ciphertext({'c':ciphervote},public_key,'c')
+
+		#homomorphically add votes
+		if count == 0:
+			ciphervotestotal = ciphervote
+		else:		
+			ciphervotestotal = ciphervotestotal + ciphervote
+		
 		#JEREMY ---------------------------------------------------
 
 		#load notary public key
@@ -56,8 +92,23 @@ def listen_for_client():
 
 		print (str(addr) + " voted " + vote)
 		
+
 		c.send("Vote registered.")	#send confirmation msg
 		c.close()	#close client connection
+		
+		count = count + 1
+
+		if count == 3:
+			#write total vote to file in serizlied format to be opened later
+			f=open(ciphervotesTotalFile,'wb')
+			f.write(specialInt.serialize(ciphervotestotal['c']))
+			break
+
 
 if __name__ == "__main__":
 	listen_for_client()			
+	
+	
+
+
+

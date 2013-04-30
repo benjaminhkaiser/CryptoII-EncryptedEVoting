@@ -9,12 +9,12 @@ import StringIO
 
 from charm.toolbox.integergroup import RSAGroup 
 from charm.schemes.pkenc import pkenc_paillier99
-
+from charm.core.engine.util import objectToBytes,bytesToObject
 from optparse import OptionParser
 
 n=5
 k=3
-prefix="SharedSecret"
+prefix="VotingSharedSecret"
 usage="You can generate secrets or combine sercrets,n=5,k=3"
 parser = OptionParser(usage=usage)
 
@@ -31,7 +31,7 @@ if(options.generate):
 	outputs=[]
 	group = RSAGroup()
 	pai = pkenc_paillier99.Pai99(group)
-	(public_key, secret_key) = pai.keygen()
+	(public_key, secret_key) = pai.keygen(secparam=32)
 
 	sharedsecret = str(secret_key['u']) + ',' + str(secret_key['lamda'])
 #	sharedsecret = "message"
@@ -48,6 +48,15 @@ if(options.generate):
 #		print outputs[i].getvalue().encode('hex')
 		f = open(prefix+str(i),'w')
 		f.write(outputs[i].getvalue())
+
+	f=open("VotingPublic",'wb')
+	f.write(objectToBytes(public_key,group))
+
+	f=open("VotingPrivate",'wb')
+	f.write(objectToBytes(secret_key,group))
+
+	print "Public key n,g,n**2 placed into file VotingPublic"
+	print "Shared secret key u,lambda placed into files VotingSharedSecret0 - VotingSharedSecretN"
 
 if(options.combine):
 		
@@ -69,6 +78,7 @@ if(options.combine):
 	decode(inputs,output)
 
 	#if(sharedsecret == output.getvalue()):
+	print output.getvalue()
 	print 'Recovered key is in file ./RecoveredKey'
 	f=open('RecoveredKey','w')
 	f.write(output.getvalue())
