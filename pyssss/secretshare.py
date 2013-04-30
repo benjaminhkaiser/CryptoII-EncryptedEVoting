@@ -33,8 +33,10 @@ if(options.generate):
 	pai = pkenc_paillier99.Pai99(group)
 	(public_key, secret_key) = pai.keygen(secparam=32)
 
-	sharedsecret = str(secret_key['u']) + ',' + str(secret_key['lamda'])
+	#sharedsecret = str(secret_key['u']) + ',' + str(secret_key['lamda'])
 #	sharedsecret = "message"
+	sharedsecret = objectToBytes(secret_key,group)
+	print sharedsecret
 	input = StringIO.StringIO(sharedsecret)
 
 
@@ -52,8 +54,8 @@ if(options.generate):
 	f=open("VotingPublic",'wb')
 	f.write(objectToBytes(public_key,group))
 
-	f=open("VotingPrivate",'wb')
-	f.write(objectToBytes(secret_key,group))
+	#f=open("VotingPrivate",'wb')
+	#f.write(objectToBytes(secret_key,group))
 
 	print "Public key n,g,n**2 placed into file VotingPublic"
 	print "Shared secret key u,lambda placed into files VotingSharedSecret0 - VotingSharedSecretN"
