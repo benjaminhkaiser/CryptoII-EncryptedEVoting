@@ -13,6 +13,7 @@ publicKeyFile = "serverpubkey.pem"
 ciphervotesFile = "CipherVotes"
 ciphervotesTotalFile = "CipherVotesTotal"
 
+numvoters = 10
 voteSize=128
 signedVoteSize=320
 serverPublicKeySize = 1024
@@ -64,10 +65,14 @@ def listen_for_client():
 		vote = AES_decryptor.decrypt(vote)
 		signed_vote = [long(AES_decryptor.decrypt(signed_vote).strip()),None]
 		
-		#JEREMY ----------------------------------------------------
-		#PUT PAILLER DECRYPTION HERE
-		#vote HOLDS THE PAILLER-ENCRPYTED PACKET
-		
+		#load notary public key
+		f = open("NotaryKey.pem",'r')
+		not_pub_key = RSA.importKey(f.read())
+		f.close()
+	
+		#use notary public key to verify signed vote against regular vote
+		print("Verification: ", not_pub_key.verify(vote, signed_vote))
+
 		#write votes to file in serialized format to be opened later	
 		f=open(ciphervotesFile,'a')
 		f.write(vote)
@@ -82,18 +87,8 @@ def listen_for_client():
 			ciphervotestotal = ciphervote
 		else:		
 			ciphervotestotal = ciphervotestotal + ciphervote
-		
-		#JEREMY ---------------------------------------------------
-
-		#load notary public key
-		f = open("NotaryKey.pem",'r')
-		not_pub_key = RSA.importKey(f.read())
-		f.close()
 	
-		#use notary public key to verify signed vote against regular vote
-		print(not_pub_key.verify(vote, signed_vote))
-
-		print (str(addr) + " voted " + vote)
+		#print (str(addr) + " voted " + vote)
 		
 
 		c.send("Vote registered.")	#send confirmation msg
@@ -101,7 +96,7 @@ def listen_for_client():
 		
 		count = count + 1
 
-		if count == 3:
+		if count == numvoters:
 			#write total vote to file in serizlied format to be opened later
 			f=open(ciphervotesTotalFile,'wb')
 			f.write(specialInt.serialize(ciphervotestotal['c']))
