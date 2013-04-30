@@ -54,7 +54,7 @@ while(1):
 	filesize_g = statinfo.st_size
 	f = open('RegKeys.pem', 'r')
 	g = open('AlreadyVoted.pem','r')
-	myFirstTime = true #Make sure no one tries to vote twice
+	myFirstTime = True #Make sure no one tries to vote twice
 
 	#271 is standard key size in pem format, it is assumed that these key files
 	# are tamper proof but could add extra error checking in the real world
