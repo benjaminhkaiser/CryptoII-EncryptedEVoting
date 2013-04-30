@@ -55,24 +55,26 @@ while(1):
 	f = open('RegKeys.pem', 'r')
 	g = open('AlreadyVoted.pem','r')
 	myFirstTime = true #Make sure no one tries to vote twice
-	#if (filesize_f%271 == 0):
+
 	#271 is standard key size in pem format, it is assumed that these key files
-	# are tamper proof but it could be error checked with the above line
-	for x in range(0, filesize_f/271):
-		tPubKey = RSA.importKey(f.read(271))
-		for y in range(0, filesize_g/217):
-			tAlreadyKey = RSA.importKey( g.read(271) )
-			if tAlreadyKey == tPubKey:#Wont check keys already used
-				myFirstTime = false
-				break;
-		g.close()
-		g = open('AlreadyVoted.pem','a')
-		if myFirstTime:
-			if tPubKey.verify(randomBits, signedRandomBits):
-				isValidUser = True
-				g.write(tPubKey.exportKey())
-				break;
-		g.close()
+	# are tamper proof but could add extra error checking in the real world
+	if (filesize_f%271 == 0):
+		for x in range(0, filesize_f/271):
+			tPubKey = RSA.importKey(f.read(271))
+			for y in range(0, filesize_g/217):
+				tAlreadyKey = RSA.importKey( g.read(271) )
+				if tAlreadyKey == tPubKey:#Wont check keys already used
+					myFirstTime = false
+					break;
+			g.close()
+			g = open('AlreadyVoted.pem','a')
+			if myFirstTime:
+				if tPubKey.verify(randomBits, signedRandomBits):
+					isValidUser = True
+					g.write(tPubKey.exportKey())
+					break;
+	f.close()	
+	g.close()
 	myFirstTime = true # reset this for the next voter
 
 	#if the user is valid, sign the vote and send it back		
