@@ -11,6 +11,7 @@ from charm.toolbox.integergroup import RSAGroup
 from charm.schemes.pkenc import pkenc_paillier99
 from charm.core.engine.util import objectToBytes,bytesToObject
 from optparse import OptionParser
+import os
 
 n=5
 k=3
@@ -28,6 +29,16 @@ if(options.generate == False and options.combine == False):
 
 
 if(options.generate):
+	#remove files from previous runs
+	if os.path.exists("./VotingPrivate"):
+		os.remove("./VotingPrivate")
+	if os.path.exists("./VotingPublic"):
+		os.remove("./VotingPublic")
+	if os.path.exists("../PublishingResults"):
+		os.remove("../PublishingResults")
+	if os.path.exists("./RecoveredKey"):
+		os.remove("./RecoveredKey")
+
 	outputs=[]
 	group = RSAGroup()
 	pai = pkenc_paillier99.Pai99(group)

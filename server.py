@@ -13,7 +13,7 @@ publicKeyFile = "serverpubkey.pem"
 ciphervotesFile = "CipherVotes"
 ciphervotesTotalFile = "CipherVotesTotal"
 
-numvoters = 10
+numvoters = 3
 voteSize=128
 signedVoteSize=320
 serverPublicKeySize = 1024
