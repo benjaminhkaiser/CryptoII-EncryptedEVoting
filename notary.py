@@ -16,12 +16,12 @@ sock.bind((host,port))	#bind socket to port
 sock.listen(5)		#listen for client connection
 
 
-AES_key_size = 128
-AES_iv_size = 128
+AES_key_size = 512 
+AES_iv_size = 512 
 blindedVoteSize = 128
 signedBlindedVoteSize = 320
 signedRandomBitsSize = 320
-notaryPublicKeySize=1024
+notaryPublicKeySize=4096
 while(1):
 	#Generate a Notary key pair
 	NotaryKey = RSA.generate(notaryPublicKeySize)
@@ -38,6 +38,8 @@ while(1):
 	#get AES info and decrypt using RSA private key
 	AES_key = NotaryKey.decrypt(c.recv(AES_key_size))
 	AES_iv = NotaryKey.decrypt(c.recv(AES_iv_size))
+	print AES_iv
+	print len(AES_iv)
 	AES_encryptor = AES.new(AES_key, AES.MODE_CBC, AES_iv)
 	#generate random bits, encrypt, send to voter
 	randomBits = str(Random.new().read(16))
@@ -78,14 +80,15 @@ while(1):
 					break;
 	f.close()	
 	g.close()
-	myFirstTime = true # reset this for the next voter
+	myFirstTime = True # reset this for the next voter
 
 	#if the user is valid, sign the vote and send it back		
 	if isValidUser:
 		#sign the vote
 		k = getrandbits(64)
 		blind_signed_vote = str(NotaryKey.sign(blindedVote,k)[0])
-
+		
+		print len(blind_signed_vote)
 		#pad the signed vote to len 320 
 		while (len(blind_signed_vote) < signedBlindedVoteSize):
 			blind_signed_vote += " "

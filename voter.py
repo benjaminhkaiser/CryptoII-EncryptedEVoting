@@ -16,7 +16,7 @@ from charm.core.engine.util import objectToBytes,bytesToObject
 
 signedRandomBitsSize=320
 voteSize=128
-signedBlindedVoteSize=320
+signedBlindedVoteSize=1232
 def get_vote():
 	vote = raw_input("Enter your vote: ")	#get vote from user
 	vote = long(vote)	
@@ -99,7 +99,6 @@ def connect_to_server():
 	#encrypt AES info with notary's public key
 	enc_AES_key = not_pub_key.encrypt(not_AES_key,32)
 	enc_AES_iv = not_pub_key.encrypt(not_AES_iv,32)
-
 	#initialize network connection to notary
 	not_sock = socket.socket()		#create a socket
 	not_port = int(sys.argv[2])   	#initialize the port for the socket
