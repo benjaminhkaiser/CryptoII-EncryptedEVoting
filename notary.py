@@ -6,6 +6,7 @@ from Crypto.Cipher import AES
 from Crypto.Random.random import getrandbits
 from Crypto import Random
 import os, socket, sys
+from os.path import isfile
 
 #initialize network connection to voter
 sock = socket.socket()	#create socket
@@ -29,6 +30,9 @@ while(1):
 	f = open('NotaryKey.pem','w')
 	f.write(NotaryPublic.exportKey())
 	f.close()
+	#Create the file to store users who have voted
+	f = open('AlreadyVoted.pem','w')
+	f.close()
 	
 	c,addr = sock.accept()	#accept voter connection
 	#get AES info and decrypt using RSA private key
@@ -44,15 +48,37 @@ while(1):
 	signedRandomBits = [long(AES_encryptor.decrypt(c.recv(signedRandomBitsSize)).strip()),None]
 	blindedVote = AES_encryptor.decrypt(c.recv(blindedVoteSize))
 	
+	#The registrar must already have published to keys at this point
+	# could add redudant (based on our assumptions) error checking that 
+	#this file already exists
 	statinfo = os.stat('RegKeys.pem')
-	filesize = statinfo.st_size
+	filesize_f = statinfo.st_size
+	statinfo = os.stat('AlreadyVoted.pem')
+	filesize_g = statinfo.st_size
 	f = open('RegKeys.pem', 'r')
-	if (filesize%271 == 0):
-		for x in range(0, filesize/271):
+	g = open('AlreadyVoted.pem','r')
+	myFirstTime = True #Make sure no one tries to vote twice
+
+	#271 is standard key size in pem format, it is assumed that these key files
+	# are tamper proof but could add extra error checking in the real world
+	if (filesize_f%271 == 0):
+		for x in range(0, filesize_f/271):
 			tPubKey = RSA.importKey(f.read(271))
-			if tPubKey.verify(randomBits, signedRandomBits):
-				isValidUser = True
-				break;
+			for y in range(0, filesize_g/217):
+				tAlreadyKey = RSA.importKey( g.read(271) )
+				if tAlreadyKey == tPubKey:#Wont check keys already used
+					myFirstTime = false
+					break;
+			g.close()
+			g = open('AlreadyVoted.pem','a')
+			if myFirstTime:
+				if tPubKey.verify(randomBits, signedRandomBits):
+					isValidUser = True
+					g.write(tPubKey.exportKey())
+					break;
+	f.close()	
+	g.close()
+	myFirstTime = true # reset this for the next voter
 
 	#if the user is valid, sign the vote and send it back		
 	if isValidUser:
