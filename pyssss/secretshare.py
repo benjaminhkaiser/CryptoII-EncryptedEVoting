@@ -38,7 +38,10 @@ if(options.generate):
 		os.remove("../PublishingResults")
 	if os.path.exists("./RecoveredKey"):
 		os.remove("./RecoveredKey")
-
+	if os.path.exists("../CipherVotes"):
+		os.remove("../CipherVotes")
+	if os.path.exists("../CipherVotesTotal"):
+		os.remove("../CipherVotesTotal")
 	outputs=[]
 	group = RSAGroup()
 	pai = pkenc_paillier99.Pai99(group)
