@@ -75,7 +75,7 @@ while(1):
 					break;
 	f.close()	
 	g.close()
-	myFirstTime = true # reset this for the next voter
+	myFirstTime = True # reset this for the next voter
 
 	#if the user is valid, sign the vote and send it back		
 	if isValidUser:
