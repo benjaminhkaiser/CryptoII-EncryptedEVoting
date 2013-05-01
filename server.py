@@ -13,6 +13,8 @@ publicKeyFile = "serverpubkey.pem"
 ciphervotesFile = "CipherVotes"
 ciphervotesTotalFile = "CipherVotesTotal"
 
+AES_key_size = 128
+AES_iv_size = 128
 voteSize=128
 signedVoteSize=320
 serverPublicKeySize = 1024
@@ -23,8 +25,7 @@ def set_RSA_keys():
 	keys = RSA.generate(serverPublicKeySize,rand)
 
 	#write public key to file
-	public_key = keys.publickey().exportKey()
-	pubHandle = open(publicKeyFile, 'w')
+	public_key = keys.publickey().exportKey() pubHandle = open(publicKeyFile, 'w')
 	pubHandle.write(public_key)
 	
 	return keys 
@@ -54,8 +55,8 @@ def listen_for_client():
 		c, addr = s.accept()	#accept client connection
 		
 		#get AES info and decrypt using RSA private key
-		AES_key = key.decrypt(c.recv(128))
-		AES_iv = key.decrypt(c.recv(128))
+		AES_key = key.decrypt(c.recv(AES_key_size))
+		AES_iv = key.decrypt(c.recv(AES_iv_size))
 		
 		#get vote and signed vote, decrypt, unpad
 		AES_decryptor = AES.new(AES_key, AES.MODE_CBC, AES_iv)

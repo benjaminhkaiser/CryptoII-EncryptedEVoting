@@ -14,6 +14,9 @@ port = int(sys.argv[1])		#initialize port to connect over
 sock.bind((host,port))	#bind socket to port
 sock.listen(5)		#listen for client connection
 
+
+AES_key_size = 128
+AES_iv_size = 128
 blindedVoteSize = 128
 signedBlindedVoteSize = 320
 signedRandomBitsSize = 320
@@ -29,8 +32,8 @@ while(1):
 	
 	c,addr = sock.accept()	#accept voter connection
 	#get AES info and decrypt using RSA private key
-	AES_key = NotaryKey.decrypt(c.recv(128))
-	AES_iv = NotaryKey.decrypt(c.recv(128))
+	AES_key = NotaryKey.decrypt(c.recv(AES_key_size))
+	AES_iv = NotaryKey.decrypt(c.recv(AES_iv_size))
 	AES_encryptor = AES.new(AES_key, AES.MODE_CBC, AES_iv)
 	#generate random bits, encrypt, send to voter
 	randomBits = str(Random.new().read(16))
